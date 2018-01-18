@@ -1,0 +1,30 @@
+{
+  "name": "bill",
+  "version": "1.0.0",
+  "description": "Telegram bot to monitor sport activity",
+  "main": "app.js",
+  "dependencies": {
+    "google-auth-library": "^0.12.0",
+    "googleapis": "^24.0.0",
+    "node-telegram-bot-api": "^0.30.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/backmeupplz/bill.git"
+  },
+  "keywords": [
+    "bot",
+    "telegram",
+    "bill"
+  ],
+  "author": "backmeupplz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/backmeupplz/bill/issues"
+  },
+  "homepage": "https://github.com/backmeupplz/bill#readme"
+}
