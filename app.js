@@ -10,7 +10,7 @@ let jwtClient = new google.auth.JWT(
   null,
   key.private_key,
   ['https://www.googleapis.com/auth/spreadsheets']);
-const chat = 231399891;
+const chat = -1001325833645;
 const spreadsheetId = '1g75OIJGOqvZveIReuurPtDY-Yau39PBcMQ6qrTlFddE';
 
 let bot = new TelegramBot(token, {polling: true});
@@ -38,7 +38,7 @@ bot.on('message', (msg) => {
   const isRightChat = msg.chat.id == chat;
   const isPhoto = !!msg.photo;
 
-  if ((!isRightChat && !isPhoto) || !authorized) return;
+  if (!isRightChat || !isPhoto || !authorized) return;
 
   bot.sendChatAction(chat, 'typing');
 
