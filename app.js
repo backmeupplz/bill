@@ -13,34 +13,75 @@ let jwtClient = new google.auth.JWT(
 const chat = 76104711;
 const spreadsheetId = '1g75OIJGOqvZveIReuurPtDY-Yau39PBcMQ6qrTlFddE';
 
-// let bot = new TelegramBot(token, {polling: true});
+let bot = new TelegramBot(token, {polling: true});
 
 let authorized = false;
 let sheet = [];
 
 // Authorize
-jwtClient.authorize((err, tokens) => {
+jwtClient.authorize(async (err, tokens) => {
   authorized = true;
-  start();
+
+  // Start updating the sheet
+  await getSheet();
+  checkReminders();
+
+  setInterval(async () => {
+    await getSheet();
+    checkReminders();
+  }, 1000 * 60 * 10);
 });
 
-async function start() {
-  await addTrainingToUser('borodutch');
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+
+  const isRightChat = msg.chat.id == chat;
+  const isPhoto = !!msg.photo;
+
+  if ((!isRightChat && !isPhoto) || !authorized) return;
+
+  bot.sendChatAction(chat, 'typing');
+
+  checkIfNeedsConfirmation(msg);
+});
+
+bot.on('callback_query', async function onCallbackQuery(callbackQuery) {
+  if (callbackQuery.from.username !== 'borodutch') {
+    bot.answerCallbackQuery(callbackQuery.id, {
+      text: 'Только Никита может аппрувить.'
+    });
+    return;
+  }
+
+  const data = callbackQuery.data.split('~');
+  const approved = data[0] === 'y';
+  const username = data[1];
+
+  if (approved) {
+    // Add training
+    await addTrainingToUser(username);
+    bot.editMessageText('Заапрувлено 👍🏻', {
+      reply_markup: {},
+      chat_id: callbackQuery.message.chat.id,
+      message_id: callbackQuery.message.message_id
+    });
+  } else {
+    // Just delete
+    bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id);
+  }
+});
+
+function checkIfNeedsConfirmation(msg) {
+  bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
+    reply_to_message_id: msg.message_id,
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: 'Любо 👍🏻', callback_data: `y~${msg.from.username}` },
+         { text: 'Такое 🌮', callback_data: `n~${msg.from.username}` }]
+      ]
+    }
+  });
 }
-
-// bot.on('message', (msg) => {
-//     const chatId = msg.chat.id;
-
-//     const isRightChat = msg.chat.id == chat;
-//     const isPhoto = !!msg.photo;
-
-//     if ((!isRightChat && !isPhoto) || !authorized) return;
-
-//     console.log(msg);
-//     bot.sendMessage(chatId, 'Received your message');
-
-// bot.sendChatAction(chat, 'typing');
-// });
 
 async function addTrainingToUser(username) {
   await getSheet();
@@ -98,4 +139,42 @@ async function updateSheet(column, row, value) {
       }
     });
   })
+}
+
+function checkReminders() {
+  sheet.forEach(user => {
+    checkUser(user);
+  });
+}
+
+const checkedUsers = [];
+
+function checkUser(user) {
+  // Check if it's late
+  const hour = Number(user[13].split(' ')[1].split(':')[0]);
+  const isLate = hour >= 22;
+
+  if (!isLate) return;
+
+  if (checkedUsers.indexOf(user[0]) > -1) {
+    if (hour == 1) {
+      checkedUsers.splice(checkedUsers.indexOf(user[0]), 1);
+    }
+    return;
+  }
+
+  // Check if no training yet
+  const day = Number(user[2]);
+  const week = Math.floor(day / 7);
+  const trainingsRequired = day % 7;
+  const finishedTrainings = Number(user[3 + week]);
+
+  if (finishedTrainings < trainingsRequired) {
+    remind(user[0]);
+  }
+}
+
+function remind(username) {
+  bot.sendMessage(chat, `${username} добрый вечер, вы еще можете успеть потренироваться. Вперед к спорту и здоровому телу! 💪🏻`);
+  checkedUsers.push(username);
 }
