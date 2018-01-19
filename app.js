@@ -71,7 +71,24 @@ bot.on('callback_query', async function onCallbackQuery(callbackQuery) {
   }
 });
 
+const confirmed = {};
 function checkIfNeedsConfirmation(msg) {
+  const username = msg.from.username;
+
+  let user;
+  for (let sUser in sheet) {
+    if (sUser[0].indexOf(username) > -1) {
+      user = sUser;
+      break;
+    }
+  }
+  if (!user) return;
+  const day = Number(user[13].split(' ')[0].split('-')[0]);
+
+  if (confirmed[username] === day) return;
+
+  confirmed[username] = day;
+
   bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
     reply_to_message_id: msg.message_id,
     reply_markup: {
