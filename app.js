@@ -76,7 +76,8 @@ function checkIfNeedsConfirmation(msg) {
   const username = msg.from.username;
 
   let user;
-  for (let sUser in sheet) {
+  for (let i = 0; i < sheet.length; i++) {
+    let sUser = sheet[i];
     if (sUser[0].indexOf(username) > -1) {
       user = sUser;
       break;
@@ -85,9 +86,8 @@ function checkIfNeedsConfirmation(msg) {
   if (!user) return;
   const day = Number(user[13].split(' ')[0].split('-')[0]);
 
+  console.log(confirmed);
   if (confirmed[username] === day) return;
-
-  confirmed[username] = day;
 
   bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
     reply_to_message_id: msg.message_id,
@@ -111,6 +111,9 @@ async function addTrainingToUser(username) {
   });
   
   const row = sheet[index];
+
+  const day = Number(row[13].split(' ')[0].split('-')[0]);
+  confirmed[username] = day;
   
   for (let i = 3; i <= 10; i++) {
     if (row[i] < 6) {
