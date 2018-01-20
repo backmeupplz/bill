@@ -89,6 +89,8 @@ function checkIfNeedsConfirmation(msg) {
   console.log(confirmed);
   if (confirmed[username] === day) return;
 
+  checkedUsers.push(username);
+
   bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
     reply_to_message_id: msg.message_id,
     reply_markup: {
