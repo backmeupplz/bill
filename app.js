@@ -174,14 +174,14 @@ function checkUser(user) {
   const hour = Number(user[13].split(' ')[1].split(':')[0]);
   const isLate = hour >= 22;
 
-  if (!isLate) return;
-
   if (checkedUsers.indexOf(user[0]) > -1) {
     if (hour == 1) {
       checkedUsers.splice(checkedUsers.indexOf(user[0]), 1);
     }
     return;
   }
+
+  if (!isLate) return;
 
   // Check if no training yet
   const day = Number(user[2]);
