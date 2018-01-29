@@ -73,23 +73,23 @@ bot.on('callback_query', async function onCallbackQuery(callbackQuery) {
 
 const confirmed = {};
 function checkIfNeedsConfirmation(msg) {
-  const username = msg.from.username;
+//   const username = msg.from.username;
 
-  let user;
-  for (let i = 0; i < sheet.length; i++) {
-    let sUser = sheet[i];
-    if (sUser[0].indexOf(username) > -1) {
-      user = sUser;
-      break;
-    }
-  }
-  if (!user) return;
-  const day = Number(user[13].split(' ')[0].split('-')[0]);
+//   let user;
+//   for (let i = 0; i < sheet.length; i++) {
+//     let sUser = sheet[i];
+//     if (sUser[0].indexOf(username) > -1) {
+//       user = sUser;
+//       break;
+//     }
+//   }
+//   if (!user) return;
+//   const day = Number(user[13].split(' ')[0].split('-')[0]);
 
-  console.log(confirmed);
-  if (confirmed[username] === day) return;
+//   console.log(confirmed);
+//   if (confirmed[username] === day) return;
 
-  checkedUsers.push(username);
+//   checkedUsers.push(username);
 
   bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
     reply_to_message_id: msg.message_id,
