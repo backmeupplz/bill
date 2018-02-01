@@ -129,7 +129,7 @@ async function getSheet() {
   return new Promise((res, rej) => {
     sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: ['A2:N23'],
+      range: ['A2:N24'],
       auth: jwtClient
     }, (err, response) => {
       if (err) { 
