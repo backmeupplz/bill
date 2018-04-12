@@ -1,95 +1,68 @@
-const TelegramBot = require('node-telegram-bot-api');
+const bot = require('./bot')
 
-const token = '454530498:AAEGpFbjeIhKsL7hprcsEZC27NvMbAaegoY';
-const key = require('./auth.json');
 
-var google = require('googleapis');
-const sheets = google.sheets('v4');
-let jwtClient = new google.auth.JWT(
-  key.client_email,
-  null,
-  key.private_key,
-  ['https://www.googleapis.com/auth/spreadsheets']);
-const chat = -1001325833645;
-const spreadsheetId = '1g75OIJGOqvZveIReuurPtDY-Yau39PBcMQ6qrTlFddE';
 
-let bot = new TelegramBot(token, {polling: true});
 
-let authorized = false;
-let sheet = [];
-
-// Authorize
-jwtClient.authorize(async (err, tokens) => {
-  authorized = true;
-
-  // Start updating the sheet
-  await getSheet();
-  checkReminders();
-
-  setInterval(async () => {
-    await getSheet();
-    checkReminders();
-  }, 1000 * 60 * 10);
-});
+const chat = -1001325833645
 
 bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
+  const chatId = msg.chat.id
 
-  const isRightChat = msg.chat.id == chat;
-  const isPhoto = !!msg.photo;
+  const isRightChat = msg.chat.id == chat
+  const isPhoto = !!msg.photo
 
-  if (!isRightChat || !isPhoto || !authorized) return;
+  if (!isRightChat || !isPhoto || !authorized) return
 
-  bot.sendChatAction(chat, 'typing');
+  bot.sendChatAction(chat, 'typing')
 
-  checkIfNeedsConfirmation(msg);
-});
+  checkIfNeedsConfirmation(msg)
+})
 
 bot.on('callback_query', async function onCallbackQuery(callbackQuery) {
   if (callbackQuery.from.username !== 'borodutch') {
     bot.answerCallbackQuery(callbackQuery.id, {
       text: 'Только Никита может аппрувить.'
-    });
-    return;
+    })
+    return
   }
 
-  const data = callbackQuery.data.split('~');
-  const approved = data[0] === 'y';
-  const username = data[1];
+  const data = callbackQuery.data.split('~')
+  const approved = data[0] === 'y'
+  const username = data[1]
 
   if (approved) {
     // Add training
-    await addTrainingToUser(username);
+    await addTrainingToUser(username)
     bot.editMessageText('Заапрувлено 👍🏻', {
       reply_markup: {},
       chat_id: callbackQuery.message.chat.id,
       message_id: callbackQuery.message.message_id
-    });
+    })
   } else {
     // Just delete
-    bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id);
+    bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
   }
-});
+})
 
-const confirmed = {};
+const confirmed = {}
 function checkIfNeedsConfirmation(msg) {
-//   const username = msg.from.username;
+//   const username = msg.from.username
 
-//   let user;
-//   for (let i = 0; i < sheet.length; i++) {
-//     let sUser = sheet[i];
+//   let user
+//   for (let i = 0 i < sheet.length i++) {
+//     let sUser = sheet[i]
 //     if (sUser[0].indexOf(username) > -1) {
-//       user = sUser;
-//       break;
+//       user = sUser
+//       break
 //     }
 //   }
-//   if (!user) return;
-//   const day = Number(user[13].split(' ')[0].split('-')[0]);
+//   if (!user) return
+//   const day = Number(user[13].split(' ')[0].split('-')[0])
 
-//   console.log(confirmed);
-//   if (confirmed[username] === day) return;
+//   console.log(confirmed)
+//   if (confirmed[username] === day) return
 
-//   checkedUsers.push(username);
+//   checkedUsers.push(username)
 
   bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
     reply_to_message_id: msg.message_id,
@@ -99,28 +72,28 @@ function checkIfNeedsConfirmation(msg) {
          { text: 'Такое 🌮', callback_data: `n~${msg.from.username}` }]
       ]
     }
-  });
+  })
 }
 
 async function addTrainingToUser(username) {
-  await getSheet();
+  await getSheet()
 
-  let index = -1;
+  let index = -1
   const members = sheet.forEach((a, i) => {
     if (a[0].indexOf(username) > -1) {
-      index = i;
+      index = i
     }
-  });
+  })
   
-  const row = sheet[index];
+  const row = sheet[index]
 
-  const day = Number(row[13].split(' ')[0].split('-')[0]);
-  confirmed[username] = day;
+  const day = Number(row[13].split(' ')[0].split('-')[0])
+  confirmed[username] = day
   
   for (let i = 3; i <= 10; i++) {
     if (row[i] < 6) {
-      await updateSheet(i, index, Number(row[i]) + 1);
-      return;
+      await updateSheet(i, index, Number(row[i]) + 1)
+      return
     }
   }
 }
@@ -135,15 +108,15 @@ async function getSheet() {
       if (err) { 
         rej(err)
       } else {
-        sheet = response.values;
-        res(response.values);
+        sheet = response.values
+        res(response.values)
       }
-    });
-  });
+    })
+  })
 }
 
 async function updateSheet(column, row, value) {
-  const columns = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+  const columns = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
   return new Promise((res, rej) => {
     sheets.spreadsheets.values.update({
       spreadsheetId,
@@ -157,46 +130,46 @@ async function updateSheet(column, row, value) {
       if (err) { 
         rej(err)
       } else {
-        res(response);
+        res(response)
       }
-    });
+    })
   })
 }
 
 function checkReminders() {
   sheet.forEach(user => {
-    checkUser(user);
-  });
+    checkUser(user)
+  })
 }
 
-const checkedUsers = [];
+const checkedUsers = []
 
 function checkUser(user) {
   // Check if it's late
-  const hour = Number(user[13].split(' ')[1].split(':')[0]);
-  const isLate = hour >= 22;
+  const hour = Number(user[13].split(' ')[1].split(':')[0])
+  const isLate = hour >= 22
 
   if (checkedUsers.indexOf(user[0]) > -1) {
     if (hour == 1) {
-      checkedUsers.splice(checkedUsers.indexOf(user[0]), 1);
+      checkedUsers.splice(checkedUsers.indexOf(user[0]), 1)
     }
-    return;
+    return
   }
 
-  if (!isLate) return;
+  if (!isLate) return
 
   // Check if no training yet
-  const day = Number(user[2]);
-  const week = Math.floor(day / 7);
-  const trainingsRequired = day % 7;
-  const finishedTrainings = Number(user[3 + week]);
+  const day = Number(user[2])
+  const week = Math.floor(day / 7)
+  const trainingsRequired = day % 7
+  const finishedTrainings = Number(user[3 + week])
 
   if (finishedTrainings < trainingsRequired) {
-    remind(user[0]);
+    remind(user[0])
   }
 }
 
 function remind(username) {
-  bot.sendMessage(chat, `${username} добрый вечер, вы еще можете успеть потренироваться. Вперед к спорту и здоровому телу! 💪🏻`);
-  checkedUsers.push(username);
+  bot.sendMessage(chat, `${username} добрый вечер, вы еще можете успеть потренироваться. Вперед к спорту и здоровому телу! 💪🏻`)
+  checkedUsers.push(username)
 }
