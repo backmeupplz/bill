@@ -4,6 +4,7 @@
   "description": "Telegram bot to monitor sport activity",
   "main": "app.js",
   "dependencies": {
+    "dotenv": "^5.0.1",
     "google-auth-library": "^0.12.0",
     "googleapis": "^24.0.0",
     "node-telegram-bot-api": "^0.30.0"
