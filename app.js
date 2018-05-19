@@ -160,56 +160,69 @@ async function checkIfCanTakeDayOff(msg) {
 }
 
 async function checkReminders() {
+  console.log(`starting checking reminders`);
   let usersToRemind = '';
   /** Check participants */
+  console.log(`checking ${participants_list.length} participants`);
   participants_list.forEach(participant => {
     /** Check if it's time to remind */
     const hour = Number(participant[13].split(' ')[1].split(':')[0]);
     const minute = Number(participant[13].split(' ')[1].split(':')[1]);
-    const isTimeToRemind = (hour === 22) && (minute > 0) && (minute < 10);
+    const isTimeToRemind = (hour === 0) && (minute > -1) && (minute < 100);
+    console.log(`participal time: ${hour}:${minute}, isTimeToRemind: ${isTimeToRemind}`);
 
     if (checkedUsers.indexOf(participant[0]) > -1) {
       if (hour === 1) delete checkedUsers[checkedUsers.indexOf(participant[0])];
+      console.log(`checked user, deliting`);
       return
     }
-
+    console.log(`time to remind: ${isTimeToRemind}`);
     if (!isTimeToRemind) return;
 
     const day = Number(participant[2]);
     const week = Math.floor(day / 7);
     const trainingsRequired = day % 7;
     const finishedTrainings = Number(participant[3 + week]);
+    console.log(`day: ${day}, week: ${week}, trainingsRequired: ${trainingsRequired}, finishedTrainings: ${finishedTrainings}`);
 
     if (finishedTrainings < trainingsRequired) {
+      console.log(`finishedTrainings < trainingsRequired ${finishedTrainings < trainingsRequired}, reminding this user`);
       usersToRemind += `${participant[0]}, `;
       checkedUsers.push(participant[0])
     }
   });
+  console.log(`users to remind1: ${usersToRemind}`);
   /** Check alumni */
+  console.log(`checking ${participants_list.length} alumni`);
   alumni_list.forEach(alumni => {
     /** Check if it's time to remind */
     const hour = Number(alumni[7].split(' ')[1].split(':')[0]);
     const minute = Number(alumni[7].split(' ')[1].split(':')[1]);
-    if (!alumni[3]) return;
+    if (!alumni[3]) return console.log(`alumni[3] is undefined`);
     const isTimeToRemind = (hour === alumni[3]) && (minute > 0) && (minute < 10);
+    console.log(`participal time: ${hour}:${minute}, isTimeToRemind: ${isTimeToRemind}`);
 
     if (checkedUsers.indexOf(alumni[0]) > -1) {
       if (hour === 1) delete checkedUsers[checkedUsers.indexOf(alumni[0])];
+      console.log(`checked user, deliting`);
       return
     }
-
+    console.log(`time to remind: ${isTimeToRemind}`);
     if (!isTimeToRemind) return;
 
     const day = Number(alumni[2]);
     const week = Math.floor(day / 7);
     const trainingsRequired = day % 7;
     const finishedTrainings = Number(alumni[3 + week]);
+    console.log(`day: ${day}, week: ${week}, trainingsRequired: ${trainingsRequired}, finishedTrainings: ${finishedTrainings}`);
 
     if (finishedTrainings < trainingsRequired) {
+      console.log(`finishedTrainings < trainingsRequired ${finishedTrainings < trainingsRequired}, reminding this user`);
       usersToRemind += `${alumni[0]}, `;
       checkedUsers.push(alumni[0])
     }
   });
+  console.log(`users to remind2: ${usersToRemind}`);
   if (usersToRemind.length === 0) return;
   await bot.sendMessage(chat, `${usersToRemind} добрый вечер, вы еще можете успеть потренироваться. Вперед к спорту и здоровому телу! 💪🏻`);
 }
@@ -220,7 +233,6 @@ async function checkIfNeedsConfirmation(msg) {
   let userType;
   for (let i = 0 ; i < participants_list.length ; i++) {
     let sUser = participants_list[i];
-    console.log(`User: ${JSON.stringify(sUser)}`);
     if (sUser[0].indexOf(username) > -1) {
       user = sUser;
       userType = 'participant';
@@ -230,7 +242,6 @@ async function checkIfNeedsConfirmation(msg) {
   if (!user) {
     for (let i = 0 ; i < alumni_list.length ; i++) {
       let sUser = alumni_list[i];
-      console.log(`User: ${JSON.stringify(sUser)}`);
       if (sUser[0].indexOf(username) > -1) {
         user = sUser;
         userType = 'alminu';
