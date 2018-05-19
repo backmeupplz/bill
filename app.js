@@ -104,7 +104,6 @@ async function getSheets() {
       (err, response) => {
         if (err) return reject(err);
         participants_list = response.values;
-        console.log(`Participants users:\n${JSON.stringify(participants_list, undefined, 2)}`);
       });
     /** Get alumni from the second tab */
     await sheets.spreadsheets.values.get(
@@ -112,7 +111,6 @@ async function getSheets() {
       (err, response) => {
         if (err) return reject(err);
         alumni_list = response.values;
-        console.log(`Alumni users:\n${JSON.stringify(alumni_list, undefined, 2)}`);
       });
     return resolve();
   })
