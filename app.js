@@ -214,6 +214,7 @@ async function checkReminders() {
       checkedUsers.push(alumni[0])
     }
   });
+  if (usersToRemind.length === 0) return;
   await bot.sendMessage(chat, `${usersToRemind} добрый вечер, вы еще можете успеть потренироваться. Вперед к спорту и здоровому телу! 💪🏻`);
 }
 async function checkIfNeedsConfirmation(msg) {
