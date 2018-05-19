@@ -41,6 +41,8 @@ jwtClient.authorize(async (err) => {
   remaining = remaining === 600 ? 0 : remaining;
 
   await delay(remaining);
+  await getSheets();
+  await checkReminders();
 
   setInterval(async () => {
     await getSheets();
