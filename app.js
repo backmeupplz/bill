@@ -29,8 +29,11 @@ jwtClient.authorize(async (err) => {
   authorized = true;
 
   /** Start updating the sheet */
-  await getSheets();
-  await checkReminders();
+  try {
+    await getSheets();
+  } finally {
+    await checkReminders();
+  }
 
   /** Wait untill time will be multiple of ten i.e. 21:10, 23:30, 15:00 */
   const seconds = new Date().getSeconds();
@@ -41,12 +44,18 @@ jwtClient.authorize(async (err) => {
   remaining = remaining === 600 ? 0 : remaining;
 
   await delay(remaining);
-  await getSheets();
-  await checkReminders();
+  try {
+    await getSheets();
+  } finally {
+    await checkReminders();
+  }
 
   setInterval(async () => {
-    await getSheets();
-    await checkReminders()
+    try {
+      await getSheets();
+    } finally {
+      await checkReminders();
+    }
   }, 1000 * 60 * 10)
 });
 
@@ -99,22 +108,35 @@ bot.on('callback_query', async (callbackQuery) => {
 });
 
 async function getSheets() {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     /** Get participants from the first tab */
-    await sheets.spreadsheets.values.get(
+    const partipians = await getPartipians();
+    /** Get alumni from the second tab */
+    const alumni = await getAlumni();
+    console.log(`sheets was getten. ${partipians.length}/${participants_list.length} ${alumni.length}/${alumni.length}`);
+    return resolve(partipians, alumni);
+  })
+}
+
+function getPartipians() {
+  return new Promise((resolve, reject) => {
+    sheets.spreadsheets.values.get(
       {spreadsheetId: spreadsheetId, range: ['Participants!A2:N24'], auth: jwtClient },
       (err, response) => {
         if (err) return reject(err);
         participants_list = response.values;
-      });
-    /** Get alumni from the second tab */
-    await sheets.spreadsheets.values.get(
-      {spreadsheetId: spreadsheetId, range: ['Alumni!A2:Z25'], auth: jwtClient },
-      (err, response) => {
-        if (err) return reject(err);
-        alumni_list = response.values;
-      });
-    return resolve();
+        resolve(participants_list);
+      })
+  })
+}
+
+function getAlumni() {
+  return new Promise((resolve, reject) => {
+    sheets.spreadsheets.values.get({spreadsheetId: spreadsheetId, range: ['Alumni!A2:Z25'], auth: jwtClient },(err, response) => {
+      if (err) return reject(err);
+      alumni_list = response.values;
+      resolve(alumni_list);
+    })
   })
 }
 
@@ -163,29 +185,26 @@ async function checkReminders() {
   console.log(`starting checking reminders`);
   let usersToRemind = '';
   /** Check participants */
-  console.log(`checking ${participants_list.length} participants`);
   participants_list.forEach(participant => {
     /** Check if it's time to remind */
     const hour = Number(participant[13].split(' ')[1].split(':')[0]);
     const minute = Number(participant[13].split(' ')[1].split(':')[1]);
-    const isTimeToRemind = (hour === 0) && (minute > -1) && (minute < 100);
-    console.log(`participal time: ${hour}:${minute}, isTimeToRemind: ${isTimeToRemind}`);
+    const isTimeToRemind = hour === 22 && minute >= 0 && minute < 10;
+    console.log(`participal ${participant[0]} time: ${hour}:${minute}, isTimeToRemind: ${isTimeToRemind}`);
 
     if (checkedUsers.indexOf(participant[0]) > -1) {
       if (hour === 1) delete checkedUsers[checkedUsers.indexOf(participant[0])];
       console.log(`checked user, deliting`);
       return
     }
-    console.log(`time to remind: ${isTimeToRemind}`);
     if (!isTimeToRemind) return;
 
     const day = Number(participant[2]);
     const week = Math.floor(day / 7);
     const trainingsRequired = day % 7;
     const finishedTrainings = Number(participant[3 + week]);
-    console.log(`day: ${day}, week: ${week}, trainingsRequired: ${trainingsRequired}, finishedTrainings: ${finishedTrainings}`);
 
-    if (finishedTrainings < trainingsRequired) {
+    if (finishedTrainings < trainingsRequired + 1) {
       console.log(`finishedTrainings < trainingsRequired ${finishedTrainings < trainingsRequired}, reminding this user`);
       usersToRemind += `${participant[0]}, `;
       checkedUsers.push(participant[0])
@@ -193,31 +212,22 @@ async function checkReminders() {
   });
   console.log(`users to remind1: ${usersToRemind}`);
   /** Check alumni */
-  console.log(`checking ${participants_list.length} alumni`);
   alumni_list.forEach(alumni => {
     /** Check if it's time to remind */
     const hour = Number(alumni[7].split(' ')[1].split(':')[0]);
     const minute = Number(alumni[7].split(' ')[1].split(':')[1]);
-    if (!alumni[3]) return console.log(`alumni[3] is undefined`);
-    const isTimeToRemind = (hour === alumni[3]) && (minute > 0) && (minute < 10);
-    console.log(`participal time: ${hour}:${minute}, isTimeToRemind: ${isTimeToRemind}`);
+    const rightTime = alumni[3] || 22;
+    const isTimeToRemind = (hour === rightTime) && (minute >= 0) && (minute < 10);
+    console.log(`alumni ${alumni[0]} participal time: ${hour}:${minute} wants to remind in ${rightTime}:00, isTimeToRemind: ${isTimeToRemind}`);
 
     if (checkedUsers.indexOf(alumni[0]) > -1) {
       if (hour === 1) delete checkedUsers[checkedUsers.indexOf(alumni[0])];
       console.log(`checked user, deliting`);
       return
     }
-    console.log(`time to remind: ${isTimeToRemind}`);
     if (!isTimeToRemind) return;
 
-    const day = Number(alumni[2]);
-    const week = Math.floor(day / 7);
-    const trainingsRequired = day % 7;
-    const finishedTrainings = Number(alumni[3 + week]);
-    console.log(`day: ${day}, week: ${week}, trainingsRequired: ${trainingsRequired}, finishedTrainings: ${finishedTrainings}`);
-
-    if (finishedTrainings < trainingsRequired) {
-      console.log(`finishedTrainings < trainingsRequired ${finishedTrainings < trainingsRequired}, reminding this user`);
+    if (alumni[8].indexOf('Нужно отдохнуть') === -1) {
       usersToRemind += `${alumni[0]}, `;
       checkedUsers.push(alumni[0])
     }
@@ -295,7 +305,7 @@ async function addTrainingToUser(username, isAlumni) {
     const user = participants_list[userIndex];
     confirmed[username] = Number(user[13].split(' ')[0].split('-')[0]);
     for (let i = 3; i <= 10; i++) {
-      if (user[i] < 6) await updateUsersSheet(i, userIndex, Number(user[i]) + 1, isAlumni);
+      if (user[i] < 6) return await updateUsersSheet(i, userIndex, Number(user[i]) + 1, isAlumni);
     }
   }
 }
