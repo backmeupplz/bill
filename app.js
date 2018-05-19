@@ -213,7 +213,7 @@ async function checkReminders() {
     let userHours = londonHours + zone;
     if (userHours >= 24) userHours -= 24;
 
-    const rightTime = alumni[3] || 22;
+    const rightTime = Number(alumni[3]) || 22;
     const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
 
     if (checkedUsers.indexOf(alumni[0]) > -1) {
