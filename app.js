@@ -19,12 +19,8 @@ let alumni_list = [];
 const confirmed = {};
 const checkedUsers = [];
 
-function wait(seconds) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      return resolve();
-    }, (seconds * 1000))
-  })
+async function delay(s) {
+  return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
 /** Authorize */
@@ -44,7 +40,7 @@ jwtClient.authorize(async (err) => {
   let remaining = ((60 - seconds) + minutes);
   remaining = remaining === 600 ? 0 : remaining;
 
-  await wait(remaining);
+  await delay(remaining);
 
   setInterval(async () => {
     await getSheets();
@@ -89,13 +85,13 @@ bot.on('callback_query', async (callbackQuery) => {
     if (!isAlumni) {
       return bot.editMessageText('Заапрувлено 👍🏻', { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
     } else {
-      return bot.editMessageText(`Заапрувлено участником \`${contributor}\` 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
+      return bot.editMessageText(`Заапрувлено участником @${contributor} 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
     }
   } else {
     if (!isAlumni) {
       return bot.deleteMessage(callbackQuery.message['chat'].id, callbackQuery.message.message_id)
     } else {
-      return bot.editMessageText(`Диспрув участником \`${contributor}\` 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
+      return bot.editMessageText(`Диспрув участником @${contributor} 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
     }
   }
 });
