@@ -65,18 +65,20 @@ bot.on('polling_error', (err) => {
 
 bot.on('message', async (msg) => {
   const isRightChat = (msg['chat'].id === chat);
+  const isCommand = !!(msg.text && msg.text.toLowerCase().includes('/'));
   let isPhoto = !!msg.photo; // todo let it be const
   if (msg.text && msg.text.toLowerCase().includes('@')) { // todo delete function after tests
     isPhoto = true;
     msg.from.username = msg.text;
   }
 
-  if (!isRightChat || !(isPhoto) || !authorized) return;
+  if (!isRightChat || !(isPhoto || isCommand) || !authorized) return;
   if (msg.text && msg.text.toLowerCase().includes('/dayoff')) {
     return await checkIfCanTakeDayOff();
   } else if (msg.text && msg.text.toLowerCase().includes('/status')) {
     return await sendStatus()
   }
+
   await bot.sendChatAction(chat, 'typing');
   checkIfNeedsConfirmation(msg)
 });
