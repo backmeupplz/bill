@@ -6,13 +6,13 @@ const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config');
 
 /** Setup bot and sheets */
-const bot = new TelegramBot(config.bot.testToken, {polling: true});
+const bot = new TelegramBot(config.bot.token, {polling: true});
 
 let jwtClient = new google.auth.JWT(config.google.client_email, null, config.google.private_key, ['https://www.googleapis.com/auth/spreadsheets']);
 
 /** Depend variables */
-const chat = config.bot.testChatId;
-const spreadsheetId = config.bot.testSheetId;
+const chat = config.bot.chatId;
+const spreadsheetId = config.bot.sheetId;
 let authorized = false;
 let participants_list = [];
 let alumni_list = [];

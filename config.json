@@ -13,10 +13,7 @@
   },
   "bot": {
     "token": "454530498:AAEGpFbjeIhKsL7hprcsEZC27NvMbAaegoY",
-    "testToken": "521106829:AAF_AoL1tFuIRpdssgAmZNXNxtlxclkl49Y",
     "chatId": -1001325833645,
-    "testChatId": -1001120220465,
-    "sheetId": "1g75OIJGOqvZveIReuurPtDY-Yau39PBcMQ6qrTlFddE",
-    "testSheetId": "1S2PWFRuwAghucQrC6VuoMNY1e7uCQQS1QyGq0mYEPh8"
+    "sheetId": "1g75OIJGOqvZveIReuurPtDY-Yau39PBcMQ6qrTlFddE"
   }
 }
