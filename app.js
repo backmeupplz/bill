@@ -252,16 +252,15 @@ async function checkIfNeedsConfirmation(msg) {
   let userType;
   for (let i = 0 ; i < participants_list.length ; i++) {
     if (participants_list[i][0].indexOf(username) > -1) {
-      user = participants_list[i][0];
+      user = participants_list[i];
       userType = 'participant';
       break
     }
   }
   if (!user) {
     for (let i = 0 ; i < alumni_list.length ; i++) {
-      let sUser = alumni_list[i];
-      if (sUser[0].indexOf(username) > -1) {
-        user = sUser;
+      if (alumni_list[i][0].indexOf(username) > -1) {
+        user = alumni_list[i];
         userType = 'alminu';
         break
       }
