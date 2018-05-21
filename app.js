@@ -65,13 +65,14 @@ bot.on('polling_error', (err) => {
 
 bot.on('message', async (msg) => {
   const isRightChat = (msg['chat'].id === chat);
-  const isCommand = !!(msg.text && msg.text.toLowerCase().includes('/'));
+  const isCommand = msg.text && (msg.text.toLowerCase().includes('/status') || msg.text.toLowerCase().includes('/dayoff'));
   let isPhoto = !!msg.photo; // todo let it be const
   if (msg.text && msg.text.toLowerCase().includes('@')) { // todo delete function after tests
     isPhoto = true;
     msg.from.username = msg.text;
   }
 
+  console.log(`${isRightChat} || (${isPhoto} || ${isCommand}) ${!authorized}`);
   if (!isRightChat || !(isPhoto || isCommand) || !authorized) return;
   if (msg.text && msg.text.toLowerCase().includes('/dayoff')) {
     return await checkIfCanTakeDayOff();
