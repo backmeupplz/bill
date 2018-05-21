@@ -186,11 +186,10 @@ async function checkReminders() {
   let usersToRemind = '';
   /** Check participants */
   participants_list.forEach(participant => {
-    /** Check if it's time to remind */
-    // const hour = Number(participant[13].split(' ')[1].split(':')[0]);
-    // const minute = Number(participant[13].split(' ')[1].split(':')[1]);
 
-    const isTimeToRemind = londonHours === 22 && londonMinutes >= 0 && londonMinutes < 10;
+    const timeZone = Number(participant[12]);
+    const userTime = londonHours + timeZone;
+    const isTimeToRemind = userTime === 22 && londonMinutes >= 0 && londonMinutes < 10;
     if (checkedUsers.indexOf(participant[0]) > -1) {
       if (londonHours === 1) delete checkedUsers[checkedUsers.indexOf(participant[0])];
       return
@@ -236,9 +235,8 @@ async function checkIfNeedsConfirmation(msg) {
   let user;
   let userType;
   for (let i = 0 ; i < participants_list.length ; i++) {
-    let sUser = participants_list[i];
-    if (sUser[0].indexOf(username) > -1) {
-      user = sUser;
+    if (participants_list[i][0].indexOf(username) > -1) {
+      user = participants_list[i][0];
       userType = 'participant';
       break
     }
