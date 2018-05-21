@@ -66,13 +66,17 @@ bot.on('polling_error', (err) => {
 bot.on('message', async (msg) => {
   const isRightChat = (msg['chat'].id === chat);
   let isPhoto = !!msg.photo; // todo let it be const
-  const isCommand = (msg.text && msg.text.toLowerCase().includes('/dayoff'));
   if (msg.text && msg.text.toLowerCase().includes('@')) { // todo delete function after tests
     isPhoto = true;
     msg.from.username = msg.text;
   }
 
   if (!isRightChat || !(isPhoto || isCommand) || !authorized) return;
+  if (msg.text && msg.text.toLowerCase().includes('/dayoff')) {
+    return await checkIfCanTakeDayOff();
+  } else if (msg.text && msg.text.toLowerCase().includes('/status')) {
+    return await sendStatus()
+  }
 
   if (isCommand) return await checkIfCanTakeDayOff(msg);
   await bot.sendChatAction(chat, 'typing');
@@ -177,7 +181,18 @@ async function checkIfCanTakeDayOff(msg) {
     checkedUsers.push(username);
     await bot.sendMessage(chat, `${username}, сегодня отдыхаешь`);
   }
+}
 
+async function sendStatus(msg) {
+  const username = msg.from.username;
+  let status;
+  alumni_list.forEach(alumni => {
+    if (alumni[0].indexOf(username) > -1) {
+      status = alumni[8];
+    }
+  });
+  if (!status) return await bot.sendMessage(chat, `Статусы есть только у выпускников`);
+  return await bot.sendMessage(chat, `${username} ${status}`);
 }
 
 async function checkReminders() {
