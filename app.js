@@ -175,7 +175,7 @@ async function checkIfCanTakeDayOff(msg) {
   });
   if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`);
 
-  if (checkedUsers[username]) return bot.sendMessage(chat, `${username}, ты уже и так отдыхаешь`);
+  if (checkedUsers.includes(username)) return bot.sendMessage(chat, `${username}, ты уже и так отдыхаешь`);
   if (status.indexOf('Нужно заниматься') > -1) {
     await bot.sendMessage(chat, `${username}, сегодня брать отгул нельзя`);
   } else {
