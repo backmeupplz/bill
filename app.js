@@ -72,12 +72,11 @@ bot.on('message', async (msg) => {
     msg.from.username = msg.text;
   }
 
-  console.log(`${isRightChat} || (${isPhoto} || ${isCommand}) ${!authorized}`);
   if (!isRightChat || !(isPhoto || isCommand) || !authorized) return;
   if (msg.text && msg.text.toLowerCase().includes('/dayoff')) {
-    return await checkIfCanTakeDayOff();
+    return await checkIfCanTakeDayOff(msg);
   } else if (msg.text && msg.text.toLowerCase().includes('/status')) {
-    return await sendStatus()
+    return await sendStatus(msg)
   }
 
   await bot.sendChatAction(chat, 'typing');
