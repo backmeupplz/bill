@@ -169,14 +169,13 @@ async function checkIfCanTakeDayOff(msg) {
       status = alumni[8];
     }
   });
-  if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`);
-
-  if (checkedUsers.includes(username)) return bot.sendMessage(chat, `${username}, ты уже и так отдыхаешь`);
+  if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`, {reply_to_message_id: msg.message_id});
+  if (checkedUsers.includes(username)) return bot.sendMessage(chat, `Ты уже и так отдыхаешь`, {reply_to_message_id: msg.message_id});
   if (status.indexOf('Нужно заниматься') > -1) {
-    await bot.sendMessage(chat, `${username}, сегодня брать отгул нельзя`);
+    await bot.sendMessage(chat, `Cегодня брать отгул нельзя`, {reply_to_message_id: msg.message_id});
   } else {
     checkedUsers.push(username);
-    await bot.sendMessage(chat, `${username}, сегодня отдыхаешь`);
+    await bot.sendMessage(chat, `Cегодня отдыхаешь`, {reply_to_message_id: msg.message_id});
   }
 }
 
@@ -188,8 +187,8 @@ async function sendStatus(msg) {
       status = alumni[8];
     }
   });
-  if (!status) return await bot.sendMessage(chat, `Статусы есть только у выпускников`);
-  return await bot.sendMessage(chat, `${username} ${status}`);
+  if (!status) return await bot.sendMessage(chat, `Статусы есть только у выпускников`, {reply_to_message_id: msg.message_id});
+  return await bot.sendMessage(chat, `${status}`, {reply_to_message_id: msg.message_id});
 }
 
 async function checkReminders() {
