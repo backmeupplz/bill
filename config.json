@@ -11,9 +11,14 @@
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/billy-g%40sturdy-web-192521.iam.gserviceaccount.com"
   },
-  "bot": {
+  "__bot": {
     "token": "454530498:AAEGpFbjeIhKsL7hprcsEZC27NvMbAaegoY",
     "chatId": -1001325833645,
     "sheetId": "1g75OIJGOqvZveIReuurPtDY-Yau39PBcMQ6qrTlFddE"
+  },
+  "bot": {
+    "token": "521106829:AAF_AoL1tFuIRpdssgAmZNXNxtlxclkl49Y",
+    "chatId": -1001120220465,
+    "sheetId": "1S2PWFRuwAghucQrC6VuoMNY1e7uCQQS1QyGq0mYEPh8"
   }
 }
