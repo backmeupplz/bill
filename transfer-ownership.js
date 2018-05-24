@@ -6,12 +6,12 @@ const config = require('./config');
 
 let jwtClient = new google.auth.JWT(config.google.client_email, null, config.google.private_key, ['https://www.googleapis.com/auth/drive']);
 
-const fileId = '1S2PWFRuwAghucQrC6VuoMNY1e7uCQQS1QyGq0mYEPh8';
+const fileId = '1S2PWFRuwAghucQrC6VuoMNY1e7uCQQS1QyGq0mYEPh8'; // моя копия документа. билли овнер.
 const permissions = [
   {
     'type': 'user',
     'role': 'writer',
-    'emailAddress': 'blendamedkiba94@gmail.com'
+    'emailAddress': 'blendamedkiba94@gmail.com' // моё мыло для трансфера
   }
 ];
 
@@ -25,6 +25,6 @@ jwtClient.authorize(async (err) => {
 async function changeOwner() {
   drive.permissions.create({resource: permissions, fileId: fileId, fields: 'id', auth: jwtClient}, function (err, res) {
     if (err) return console.error(`error while pushing ownership transit request` +err);
-    console.log('Permission ID: ', res.id)
+    console.log(`Permission:\n${JSON.stringify(res, undefined, 2)}`)
   });
 }
