@@ -196,12 +196,13 @@ async function checkReminders() {
   const londonMinutes = Number(new Date().toUTCString().slice(20, 22));
   let usersToRemind = '';
   /** Check participants */
+  if (participants_list.length < 1 || alumni_list.length < 1) return console.log(`participants and alumnis lists is empty`);
   participants_list.forEach(participant => {
 
     const timeZone = Number(participant[12]);
     const userTime = londonHours + timeZone;
     const isTimeToRemind = userTime === 22 && londonMinutes >= 0 && londonMinutes < 10;
-    if (checkedUsers.indexOf(participant[0]) > -1) {
+    if (checkedUsers.length > 0 && checkedUsers.indexOf(participant[0]) > -1) {
       if (londonHours === 1) delete checkedUsers[checkedUsers.indexOf(participant[0])];
       return
     }
@@ -226,7 +227,7 @@ async function checkReminders() {
     const rightTime = Number(alumni[3]) || 22;
     const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
 
-    if (checkedUsers.indexOf(alumni[0]) > -1) {
+    if (checkedUsers.length > 0 && checkedUsers.indexOf(alumni[0]) > -1) {
       if (userHours === 1) delete checkedUsers[checkedUsers.indexOf(alumni[0])];
       return
     }
