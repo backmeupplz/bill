@@ -232,7 +232,7 @@ async function checkReminders() {
       return
     }
     if (!isTimeToRemind) return;
-
+    if (!alumni[8] || alumni[8].length === 0) return; // no status, not active alumni user
     if (alumni[8].indexOf('Нужно отдохнуть') === -1) {
       usersToRemind += `${alumni[0]}, `;
       checkedUsers.push(alumni[0])
