@@ -88,21 +88,21 @@ bot.on('callback_query', async (callbackQuery) => {
 
   /** Check if admin if approoving participant */
   if (!isAlumni && contributor !== 'borodutch') {
-    return bot.answerCallbackQuery(callbackQuery.id, {text: 'Только Никита может аппрувить учащихся.'});
+    return bot.answerCallbackQuery(callbackQuery.id, {text: 'Только Никита может аппрувить участников программы'});
   }
 
   if (approved) {
     await addTrainingToUser(username, isAlumni);
     if (!isAlumni) {
-      return bot.editMessageText('Заапрувлено 👍🏻', { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
+      return bot.editMessageText('Заапрувленно 👍🏻', { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
     } else {
-      return bot.editMessageText(`Заапрувлено участником @${contributor} 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
+      return bot.editMessageText(`Заапрувленно участником @${contributor} 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
     }
   } else {
     if (!isAlumni) {
       return bot.deleteMessage(callbackQuery.message['chat'].id, callbackQuery.message.message_id)
     } else {
-      return bot.editMessageText(`Диспрув участником @${contributor} 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
+      return bot.editMessageText(`Дисапрувленно участником @${contributor} 👍🏻`, { reply_markup: {}, chat_id: callbackQuery.message['chat'].id, message_id: callbackQuery.message.message_id })
     }
   }
 });
@@ -170,12 +170,12 @@ async function checkIfCanTakeDayOff(msg) {
     }
   });
   if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`, {reply_to_message_id: msg.message_id});
-  if (checkedUsers.includes(username)) return bot.sendMessage(chat, `Ты уже и так отдыхаешь`, {reply_to_message_id: msg.message_id});
+  if (checkedUsers.includes(username)) return bot.sendMessage(chat, `Вы уже и так отдыхаете, куда больше?`, {reply_to_message_id: msg.message_id});
   if (status.indexOf('Нужно заниматься') > -1) {
     await bot.sendMessage(chat, `Cегодня брать отгул нельзя`, {reply_to_message_id: msg.message_id});
   } else {
     checkedUsers.push(username);
-    await bot.sendMessage(chat, `Cегодня отдыхаешь`, {reply_to_message_id: msg.message_id});
+    await bot.sendMessage(chat, `Cегодня отдыхаете`, {reply_to_message_id: msg.message_id});
   }
 }
 
@@ -283,7 +283,7 @@ async function checkIfNeedsConfirmation(msg) {
       ]]}
     })
   } else {
-    await bot.sendMessage(chat, 'Ну чо, пацаны? Аппрувим? 💪🏻', {
+    await bot.sendMessage(chat, 'Аппрувим? 💪🏻', {
       reply_to_message_id: msg.message_id,
       reply_markup: { inline_keyboard: [[
         { text: 'Любо 👍🏻', callback_data: `y~${msg.from.username}~a` },
