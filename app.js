@@ -199,7 +199,8 @@ async function checkReminders() {
   if (participants_list.length < 1 || alumni_list.length < 1) return console.log(`participants and alumnis lists is empty`);
   participants_list.forEach(async (participant) => {
     const timeZone = Number(participant[12]);
-    const userTime = londonHours + timeZone;
+    let userTime = londonHours + timeZone;
+    if (userTime >= 24) userTime -= 24;
     const isTimeToRemind = userTime === 22 && londonMinutes >= 0 && londonMinutes < 10;
     if (Number(participant[14]) === 1 && userTime === 0) {
       return await switchNotification(participant[0], false, 0);
