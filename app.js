@@ -16,8 +16,6 @@ const spreadsheetId = config.bot.sheetId;
 let authorized = false;
 let participants_list = [];
 let alumni_list = [];
-const confirmed = {};
-const checkedUsers = [];
 
 async function delay(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
@@ -164,24 +162,26 @@ async function updateUsersSheet(column, row, value, isAlumni) {
 async function checkIfCanTakeDayOff(msg) {
   const username = msg.from.username;
   let status;
+  let notification;
   alumni_list.forEach(alumni => {
     if (alumni[0].indexOf(username) > -1) {
       status = alumni[8];
+      notification = alumni[9]
     }
   });
   if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`, {reply_to_message_id: msg.message_id});
-  if (checkedUsers.includes(username)) return bot.sendMessage(chat, `Вы уже и так отдыхаете, куда больше?`, {reply_to_message_id: msg.message_id});
-  if (status.indexOf('Нужно заниматься') > -1) {
+  if (notification && notification === 1) return bot.sendMessage(chat, `Вы уже и так отдыхаете, куда больше?`, {reply_to_message_id: msg.message_id});
+  if (status && status.indexOf('Нужно заниматься') > -1) {
     await bot.sendMessage(chat, `Cегодня брать отгул нельзя`, {reply_to_message_id: msg.message_id});
   } else {
-    checkedUsers.push(username);
+    await switchNotification(username, true, 1);
     await bot.sendMessage(chat, `Cегодня отдыхаете`, {reply_to_message_id: msg.message_id});
   }
 }
 
 async function sendStatus(msg) {
   const username = msg.from.username;
-  let status;
+  let status = false;
   alumni_list.forEach(alumni => {
     if (alumni[0].indexOf(username) > -1) {
       status = alumni[8];
@@ -197,14 +197,12 @@ async function checkReminders() {
   let usersToRemind = '';
   /** Check participants */
   if (participants_list.length < 1 || alumni_list.length < 1) return console.log(`participants and alumnis lists is empty`);
-  participants_list.forEach(participant => {
-
+  participants_list.forEach(async (participant) => {
     const timeZone = Number(participant[12]);
     const userTime = londonHours + timeZone;
     const isTimeToRemind = userTime === 22 && londonMinutes >= 0 && londonMinutes < 10;
-    if (checkedUsers.length > 0 && checkedUsers.indexOf(participant[0]) > -1) {
-      if (londonHours === 1) delete checkedUsers[checkedUsers.indexOf(participant[0])];
-      return
+    if (Number(participant[14]) === 0 && londonHours === 1) {
+      return await switchNotification(participant[0], false, 0);
     }
     if (!isTimeToRemind) return;
 
@@ -215,27 +213,33 @@ async function checkReminders() {
 
     if (finishedTrainings < trainingsRequired + 1) {
       usersToRemind += `${participant[0]}, `;
-      checkedUsers.push(participant[0])
+      await switchNotification(participant[0], false, 1);
     }
   });
   /** Check alumni */
-  alumni_list.forEach(alumni => {
-    const zone = Number(alumni[6]);
-    let userHours = londonHours + zone;
+  alumni_list.forEach(async (alumni) => {
+    const alumniObj = {
+      username: alumni[0],
+      timeToRemind: Number(alumni[3]),
+      timezone: Number(alumni[6]),
+      status: alumni[8],
+      notification: Number(alumni[9])
+    };
+
+    let userHours = londonHours + alumniObj.timezone;
     if (userHours >= 24) userHours -= 24;
 
-    const rightTime = Number(alumni[3]) || 22;
+    const rightTime = alumniObj.timeToRemind|| 22;
     const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
 
-    if (checkedUsers.length > 0 && checkedUsers.indexOf(alumni[0]) > -1) {
-      if (userHours === 1) delete checkedUsers[checkedUsers.indexOf(alumni[0])];
-      return
+    if (alumniObj.notification === 1 && userHours === 1) {
+      return await switchNotification(alumniObj.username, true, 0);
     }
     if (!isTimeToRemind) return;
-    if (!alumni[8] || alumni[8].length === 0) return; // no status, not active alumni user
-    if (alumni[8].indexOf('Нужно отдохнуть') === -1) {
-      usersToRemind += `${alumni[0]}, `;
-      checkedUsers.push(alumni[0])
+    if (!alumniObj.status || alumniObj.status.length === 0) return; // no status, not active alumni user
+    if (alumniObj.status.indexOf('Нужно отдохнуть') === -1) {
+      usersToRemind += `${alumniObj.username}, `;
+      await switchNotification(alumniObj.username, true, 1);
     }
   });
   if (usersToRemind.length === 0) return;
@@ -263,16 +267,14 @@ async function checkIfNeedsConfirmation(msg) {
     }
   }
   if (!user) return;
-  let day;
+  let noticed = 1;
   if (userType === 'participant') {
-    day = Number(user[13].split(' ')[0].split('-')[0]);
+    noticed = Number(user[14])
   } else {
-    day = Number(user[7].split(' ')[0].split('-')[0]);
+    noticed = Number(user[9])
   }
 
-  if (confirmed[username] === day) return;
-
-  checkedUsers.push(username);
+  if (noticed === 1) return;
 
   if (userType === 'participant') {
     await bot.sendMessage(chat, '@borodutch аппрувим? 💪🏻', {
@@ -292,6 +294,7 @@ async function checkIfNeedsConfirmation(msg) {
     });
   }
 }
+
 async function addTrainingToUser(username, isAlumni) {
   await getSheets();
 
@@ -300,15 +303,32 @@ async function addTrainingToUser(username, isAlumni) {
     alumni_list.forEach((a, i) => { if (a[0].indexOf(username) > -1) userIndex = i });
     if (userIndex === -1) return;
     const user = alumni_list[userIndex];
-    confirmed[username] = Number(user[7].split(' ')[0].split('-')[0]);
+    await switchNotification(username, true, 1, userIndex);
     await updateUsersSheet(5, userIndex, Number(user[5]) + 1, isAlumni);
   } else {
     participants_list.forEach((a, i) => { if (a[0].indexOf(username) > -1) userIndex = i });
     if (userIndex === -1) return;
     const user = participants_list[userIndex];
-    confirmed[username] = Number(user[13].split(' ')[0].split('-')[0]);
-    for (let i = 3; i <= 10; i++) {
+    await switchNotification(username, false, 1, userIndex);
+    for (let i = 3; i < 11; i++) {
       if (user[i] < 6) return await updateUsersSheet(i, userIndex, Number(user[i]) + 1, isAlumni);
     }
   }
+}
+
+async function switchNotification(username, isAlumni, value, userIndex=-1) {
+  let column;
+  if (userIndex === -1) {
+    if (isAlumni) {
+      for (let i = 0; i < alumni_list; i++) if (alumni_list[i][0].indexOf(username) > -1) { userIndex = i; break }
+    } else {
+      for (let i = 0; i < participants_list; i++) if (participants_list[i][0].indexOf(username) > -1) { userIndex = i; break }
+    }
+  }
+  if (isAlumni) column = 9;
+  else column = 14;
+
+  if (userIndex === -1) return console.log(`Can not find user ${username} on the lists while trying to switch notification flag`);
+
+  await updateUsersSheet(column, userIndex, 1, isAlumni)
 }
