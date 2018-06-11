@@ -236,7 +236,7 @@ async function checkReminders() {
     const rightTime = alumniObj.timeToRemind|| 22;
     const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
 
-    console.log(`current time for participant ${alumniObj.username} is ${userHours}, notification: ${alumniObj.notification}`);
+    console.log(`current time for alumni ${alumniObj.username} is ${userHours}, notification: ${alumniObj.notification}`);
     if (alumniObj.notification === 1 && userHours === 0) {
       console.log(`reset notification flag for alumni ${alumniObj.username}. New day has come.`);
       return await switchNotification(alumniObj.username, true, 0);
@@ -329,9 +329,19 @@ async function switchNotification(username, isAlumni, value, userIndex=-1) {
   let column;
   if (userIndex === -1) {
     if (isAlumni) {
-      for (let i = 0; i < alumni_list; i++) if (alumni_list[i][0].indexOf(username) > -1) { userIndex = i; break }
+      for (let i = 0; i < alumni_list.length; i++) {
+        if (alumni_list[i][0].indexOf(username) > -1) {
+          userIndex = i;
+          break
+        }
+      }
     } else {
-      for (let i = 0; i < participants_list; i++) if (participants_list[i][0].indexOf(username) > -1) { userIndex = i; break }
+      for (let i = 0; i < participants_list.length; i++) {
+        if (participants_list[i][0].indexOf(username) > -1) {
+          userIndex = i;
+          break
+        }
+      }
     }
   }
   if (isAlumni) column = 9;
