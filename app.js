@@ -162,11 +162,11 @@ async function updateUsersSheet(column, row, value, isAlumni) {
 async function checkIfCanTakeDayOff(msg) {
   const username = msg.from.username;
   let status;
-  let notification;
+  let notification = 0;
   alumni_list.forEach(alumni => {
     if (alumni[0].indexOf(username) > -1) {
       status = alumni[8];
-      notification = alumni[9]
+      notification = Number(alumni[9])
     }
   });
   if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`, {reply_to_message_id: msg.message_id});
