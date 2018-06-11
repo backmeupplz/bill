@@ -345,5 +345,6 @@ async function switchNotification(username, isAlumni, value, userIndex=-1) {
 
   if (userIndex === -1) return console.log(`Can not find user ${username} on the lists while switchNotification`);
 
-  await updateUsersSheet(column, userIndex, 1, isAlumni)
+  await updateUsersSheet(column, userIndex, value, isAlumni);
+  await getSheets();
 }
