@@ -170,13 +170,13 @@ async function checkIfCanTakeDayOff(msg) {
     }
   });
   if (!status) return await bot.sendMessage(chat, `Брать отгул могут только выпускники`, {reply_to_message_id: msg.message_id});
-  if (notification && notification === 1) return bot.sendMessage(chat, `Вы уже и так отдыхаете, куда больше?`, {reply_to_message_id: msg.message_id});
+  if (notification === 1) return bot.sendMessage(chat, `Вы уже и так отдыхаете, куда больше?`, {reply_to_message_id: msg.message_id});
   if (status && status.indexOf('Нужно заниматься') > -1) {
-    await bot.sendMessage(chat, `Cегодня брать отгул нельзя`, {reply_to_message_id: msg.message_id});
+    await bot.sendMessage(chat, `Сегодня брать отгул нельзя`, {reply_to_message_id: msg.message_id});
   } else {
     console.log(`${username} can take day off, changing index to 1`);
     await switchNotification(username, true, 1);
-    await bot.sendMessage(chat, `Cегодня отдыхаете`, {reply_to_message_id: msg.message_id});
+    await bot.sendMessage(chat, `Сегодня отдыхаете`, {reply_to_message_id: msg.message_id});
   }
 }
 
@@ -242,7 +242,7 @@ async function checkReminders() {
       return await switchNotification(alumniObj.username, true, 0);
     }
     if (!isTimeToRemind) return;
-    if (!alumniObj.status && alumniObj.status.length === 0) return; // no status, not active alumni user
+    if (!alumniObj.status || alumniObj.status.length === 0) return; // no status — not active alumni user
     if (alumniObj.status.indexOf('Нужно отдохнуть') === -1) {
       usersToRemind += `${alumniObj.username}, `;
       console.log(`Noticing alumni ${alumniObj.username}. Should switch to 1.`);
@@ -252,6 +252,7 @@ async function checkReminders() {
   if (usersToRemind.length === 0) return;
   await bot.sendMessage(chat, `${usersToRemind} добрый вечер, вы еще можете успеть потренироваться. Вперед к спорту и здоровому телу! 💪🏻`);
 }
+
 async function checkIfNeedsConfirmation(msg) {
   const username = msg.from.username;
 
