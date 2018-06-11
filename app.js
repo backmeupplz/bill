@@ -118,7 +118,7 @@ async function getSheets() {
 function getPartipians() {
   return new Promise((resolve, reject) => {
     sheets.spreadsheets.values.get(
-      {spreadsheetId: spreadsheetId, range: ['Participants!A2:N24'], auth: jwtClient },
+      {spreadsheetId: spreadsheetId, range: ['Participants!A2:O24'], auth: jwtClient },
       (err, response) => {
         if (err) return reject(err);
         participants_list = response.values;
@@ -129,7 +129,7 @@ function getPartipians() {
 
 function getAlumni() {
   return new Promise((resolve, reject) => {
-    sheets.spreadsheets.values.get({spreadsheetId: spreadsheetId, range: ['Alumni!A2:Z25'], auth: jwtClient },(err, response) => {
+    sheets.spreadsheets.values.get({spreadsheetId: spreadsheetId, range: ['Alumni!A2:J25'], auth: jwtClient },(err, response) => {
       if (err) return reject(err);
       alumni_list = response.values;
       resolve(alumni_list);
