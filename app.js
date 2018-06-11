@@ -226,18 +226,18 @@ async function checkReminders() {
       status: alumni[8],
       notification: Number(alumni[9])
     };
+    if (!alumniObj.status || alumniObj.status.length === 0) return; // no status — not active alumni user
 
     let userHours = londonHours + alumniObj.timezone;
     if (userHours >= 24) userHours -= 24;
 
     const rightTime = alumniObj.timeToRemind|| 22;
-    const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0); // todo roll back && (londonMinutes < 10);
+    const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
 
     if (alumniObj.notification === 1 && userHours === 0) {
       return await switchNotification(alumniObj.username, true, 0);
     }
     if (!isTimeToRemind) return;
-    if (!alumniObj.status || alumniObj.status.length === 0) return; // no status — not active alumni user
     if (alumniObj.status.indexOf('Нужно отдохнуть') === -1) {
       usersToRemind += `${alumniObj.username}, `;
       await switchNotification(alumniObj.username, true, 1);
@@ -305,14 +305,12 @@ async function addTrainingToUser(username, isAlumni) {
     alumni_list.forEach((a, i) => { if (a[0].indexOf(username) > -1) userIndex = i });
     if (userIndex === -1) return;
     const user = alumni_list[userIndex];
-    console.log(`Adding training for alumni ${username}. Should change to 1.`);
     await switchNotification(username, true, 1, userIndex);
     await updateUsersSheet(5, userIndex, Number(user[5]) + 1, isAlumni);
   } else {
     participants_list.forEach((a, i) => { if (a[0].indexOf(username) > -1) userIndex = i });
     if (userIndex === -1) return;
     const user = participants_list[userIndex];
-    console.log(`Adding training for participant ${username}. Should change to 1.`);
     await switchNotification(username, false, 1, userIndex);
     for (let i = 3; i < 11; i++) {
       if (user[i] < 6) return await updateUsersSheet(i, userIndex, Number(user[i]) + 1, isAlumni);
@@ -341,8 +339,6 @@ async function switchNotification(username, isAlumni, value, userIndex=-1) {
   }
   if (isAlumni) column = 9;
   else column = 14;
-
-  console.log(`switchNotification(${username}, ${isAlumni}, ${value}, ${userIndex}) + column ${column}\n`);
 
   if (userIndex === -1) return console.log(`Can not find user ${username} on the lists while switchNotification`);
 
