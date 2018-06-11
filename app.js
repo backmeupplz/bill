@@ -234,7 +234,7 @@ async function checkReminders() {
     if (userHours >= 24) userHours -= 24;
 
     const rightTime = alumniObj.timeToRemind|| 22;
-    const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
+    const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0); // todo roll back && (londonMinutes < 10);
 
     console.log(`current time for alumni ${alumniObj.username} is ${userHours}, notification: ${alumniObj.notification}`);
     if (alumniObj.notification === 1 && userHours === 0) {
@@ -242,7 +242,7 @@ async function checkReminders() {
       return await switchNotification(alumniObj.username, true, 0);
     }
     if (!isTimeToRemind) return;
-    if (!alumniObj.status || alumniObj.status.length === 0) return; // no status, not active alumni user
+    if (!alumniObj.status && alumniObj.status.length === 0) return; // no status, not active alumni user
     if (alumniObj.status.indexOf('Нужно отдохнуть') === -1) {
       usersToRemind += `${alumniObj.username}, `;
       console.log(`Noticing alumni ${alumniObj.username}. Should switch to 1.`);
