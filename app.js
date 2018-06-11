@@ -174,6 +174,7 @@ async function checkIfCanTakeDayOff(msg) {
   if (status && status.indexOf('Нужно заниматься') > -1) {
     await bot.sendMessage(chat, `Cегодня брать отгул нельзя`, {reply_to_message_id: msg.message_id});
   } else {
+    console.log(`${username} can take day off, changing index to 1`);
     await switchNotification(username, true, 1);
     await bot.sendMessage(chat, `Cегодня отдыхаете`, {reply_to_message_id: msg.message_id});
   }
@@ -201,7 +202,9 @@ async function checkReminders() {
     const timeZone = Number(participant[12]);
     const userTime = londonHours + timeZone;
     const isTimeToRemind = userTime === 22 && londonMinutes >= 0 && londonMinutes < 10;
-    if (Number(participant[14]) === 0 && londonHours === 1) {
+    console.log(`current time for participant ${participant[0]} is ${userTime}, notification: ${participant[14]}`);
+    if (Number(participant[14]) === 1 && userTime === 0) {
+      console.log(`reset notification flag for ${participant[0]}. New day has come.`);
       return await switchNotification(participant[0], false, 0);
     }
     if (!isTimeToRemind) return;
@@ -213,6 +216,7 @@ async function checkReminders() {
 
     if (finishedTrainings < trainingsRequired + 1) {
       usersToRemind += `${participant[0]}, `;
+      console.log(`Noticing ${participant[0]}, should switch notification flag to 1`);
       await switchNotification(participant[0], false, 1);
     }
   });
@@ -232,13 +236,16 @@ async function checkReminders() {
     const rightTime = alumniObj.timeToRemind|| 22;
     const isTimeToRemind = (userHours === rightTime) && (londonMinutes >= 0) && (londonMinutes < 10);
 
-    if (alumniObj.notification === 1 && userHours === 1) {
+    console.log(`current time for participant ${alumniObj.username} is ${userHours}, notification: ${alumniObj.notification}`);
+    if (alumniObj.notification === 1 && userHours === 0) {
+      console.log(`reset notification flag for alumni ${alumniObj.username}. New day has come.`);
       return await switchNotification(alumniObj.username, true, 0);
     }
     if (!isTimeToRemind) return;
     if (!alumniObj.status || alumniObj.status.length === 0) return; // no status, not active alumni user
     if (alumniObj.status.indexOf('Нужно отдохнуть') === -1) {
       usersToRemind += `${alumniObj.username}, `;
+      console.log(`Noticing alumni ${alumniObj.username}. Should switch to 1.`);
       await switchNotification(alumniObj.username, true, 1);
     }
   });
@@ -303,12 +310,14 @@ async function addTrainingToUser(username, isAlumni) {
     alumni_list.forEach((a, i) => { if (a[0].indexOf(username) > -1) userIndex = i });
     if (userIndex === -1) return;
     const user = alumni_list[userIndex];
+    console.log(`Adding training for alumni ${username}. Should change to 1.`);
     await switchNotification(username, true, 1, userIndex);
     await updateUsersSheet(5, userIndex, Number(user[5]) + 1, isAlumni);
   } else {
     participants_list.forEach((a, i) => { if (a[0].indexOf(username) > -1) userIndex = i });
     if (userIndex === -1) return;
     const user = participants_list[userIndex];
+    console.log(`Adding training for participant ${username}. Should change to 1.`);
     await switchNotification(username, false, 1, userIndex);
     for (let i = 3; i < 11; i++) {
       if (user[i] < 6) return await updateUsersSheet(i, userIndex, Number(user[i]) + 1, isAlumni);
@@ -328,7 +337,9 @@ async function switchNotification(username, isAlumni, value, userIndex=-1) {
   if (isAlumni) column = 9;
   else column = 14;
 
-  if (userIndex === -1) return console.log(`Can not find user ${username} on the lists while trying to switch notification flag`);
+  console.log(`switchNotification(${username}, ${isAlumni}, ${value}, ${userIndex}) + column ${column}\n`);
+
+  if (userIndex === -1) return console.log(`Can not find user ${username} on the lists while switchNotification`);
 
   await updateUsersSheet(column, userIndex, 1, isAlumni)
 }
