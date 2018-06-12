@@ -201,6 +201,7 @@ async function checkReminders() {
     const timeZone = Number(participant[12]);
     let userTime = londonHours + timeZone;
     if (userTime >= 24) userTime -= 24;
+    if (userTime < 0) userTime += 24;
     const isTimeToRemind = userTime === 22 && londonMinutes >= 0 && londonMinutes < 10;
     if (Number(participant[14]) === 1 && userTime === 0) {
       return await switchNotification(participant[0], false, 0);
